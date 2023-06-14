@@ -1,2 +1,2 @@
 # zod-parser
-Conventional zod-schema parser
+Conventional Zod Schema Parser
