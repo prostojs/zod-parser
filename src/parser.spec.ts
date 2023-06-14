@@ -280,5 +280,18 @@ describe('Zod Parser', () => {
             s: '', a: [0], b: false, as: [''],
         })
     })
+
+    it('should process descriptions', () => {
+        const schema = z.string().describe('test string')
+        expect(parseZodType(schema, (p, def) => {
+            return {
+                type: p.$type,
+                description: def.description || '',
+            }
+        })).toEqual({
+            type: 'ZodString',
+            description: 'test string',
+        })
+    })
 })
 
