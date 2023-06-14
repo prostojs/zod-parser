@@ -95,7 +95,7 @@ export interface TZodParsedFunction extends TZodParsedBase {
     $returns: TZodParsed
 }
 
-type TZodParsed =
+export type TZodParsed =
     | TZodParsedString
     | TZodParsedNumber
     | TZodParsedBigInt
