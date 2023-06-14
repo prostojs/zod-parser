@@ -1,6 +1,6 @@
 {
   "name": "zod-parser",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Conventional Zod Schema Parser",
   "main": "index.js",
   "module": "dist/zod-parser.esm-bundler.js",
