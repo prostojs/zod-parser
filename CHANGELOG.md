@@ -1,3 +1,17 @@
+## [0.0.3](https://github.com/prostojs/zod-parser/compare/v0.0.2...v0.0.3) (2023-06-15)
+
+
+### Bug Fixes
+
+* parsing zodArray length ([1e61c22](https://github.com/prostojs/zod-parser/commit/1e61c22f98965c964361f2feec4133a754a16854))
+
+
+### Features
+
+* extract constraits ([9f056cb](https://github.com/prostojs/zod-parser/commit/9f056cb94e8c4bd7c0366a3eb01fa4ed8ce3a0df))
+
+
+
 ## 0.0.2 (2023-06-14)
 
 
