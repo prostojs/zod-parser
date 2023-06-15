@@ -283,14 +283,37 @@ describe('Zod Parser', () => {
 
     it('should process descriptions', () => {
         const schema = z.string().describe('test string')
-        expect(parseZodType(schema, (p, def) => {
+        expect(parseZodType(schema, (p) => {
             return {
                 type: p.$type,
-                description: def.description || '',
+                description: p.$ref._def.description || '',
             }
         })).toEqual({
             type: 'ZodString',
             description: 'test string',
+        })
+    })
+
+    it('should extract constraits', () => {
+        const rg = /test/
+        expect(parseZodType(z.string().min(5).max(6).regex(rg)).$checks).toEqual({
+            min: 5,
+            max: 6,
+            regex: rg,
+        })
+        expect(parseZodType(z.number().min(5).max(6)).$checks).toEqual({
+            min: 5,
+            max: 6,
+        })
+        expect(parseZodType(z.number().array().min(5).max(6)).$checks).toEqual({
+            minLength: 5,
+            maxLength: 6,
+        })
+        const now = new Date()
+        const d2 = new Date('2000-01-01')
+        expect(parseZodType(z.date().min(d2).max(now)).$checks).toEqual({
+            min: d2.getTime(),
+            max: now.getTime(),
         })
     })
 })

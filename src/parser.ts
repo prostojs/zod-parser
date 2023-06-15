@@ -1,6 +1,8 @@
 import { z } from 'zod'
 
 export interface TZodParsedBase {
+    $ref: z.ZodType
+    $checks?: Record<string, unknown>
     $optional?: boolean
     $nullable?: boolean
     $getDefault?: () => unknown
@@ -206,15 +208,27 @@ type TZodParsedAll = {
  */
 export function parseZodType<T = TZodParsed>(
     zt: z.ZodType,
-    cb?: (p: TZodParsed, _def: z.ZodTypeDef) => T,
+    cb?: (p: TZodParsed) => T,
     opts: { $optional?: boolean, $nullable?: boolean, $value?: unknown, $args?: T, $returns?: T, $get?: () => T, $getDefault?: (() => unknown) } = {}
 ): T {
-    const mergeParsedData = (data: TZodParsedAll | { $inner?: T | T[] | Record<string, T> }, newOpts?: typeof opts): TZodParsed => {
-        (data as TZodParsedAll).$type = (zt as z.ZodString)._def.typeName || '-'
+    const mergeParsedData = (_data: TZodParsedAll | { $inner?: T | T[] | Record<string, T> }, newOpts?: typeof opts, checks?: TZodParsed['$checks']): TZodParsed => {
+        // const mergeParsedData = (_data: TZodParsed, newOpts?: typeof opts): TZodParsed => {
+        const data: TZodParsed = _data as TZodParsed
+        const def = zt._def as { typeName: string, checks?: { kind: string, value?: unknown, regex?: unknown, [name: string]: unknown }[] }
+        data.$type = def.typeName as TZodParsed['$type']
+        data.$ref = zt
+        if (def.checks) {
+            const checks: Record<string, unknown> = {}
+            def.checks.forEach((v) => checks[v.kind] = v[v.kind] || v.value)
+            data.$checks = checks
+        }
+        if (checks) {
+            data.$checks = Object.assign(data.$checks || {}, checks)
+        }
         return Object.assign(data, { ...(opts || {}), ...(newOpts || {}) }) as TZodParsed
     }
 
-    const callCb = (p: TZodParsed) => ((cb || ((v) => v)) as (p: TZodParsed, _def: z.ZodTypeDef) => T)(p, zt._def)
+    const callCb = (p: TZodParsed) => ((cb || ((v) => v)) as (p: TZodParsed) => T)(p)
 
     if (zt instanceof z.ZodObject) {
         const shape: Record<string, T> = {}
@@ -226,7 +240,10 @@ export function parseZodType<T = TZodParsed>(
     }
 
     if (zt instanceof z.ZodArray) {
-        return callCb(mergeParsedData({ $inner: parseZodType<T>(zt.element as z.ZodType, cb) }))
+        const checks: TZodParsed['$checks'] = {}
+        checks.minLength = (zt._def as { minLength: { value: number } }).minLength.value
+        checks.maxLength = (zt._def as { maxLength: { value: number } }).maxLength.value
+        return callCb(mergeParsedData({ $inner: parseZodType<T>(zt.element as z.ZodType, cb) }, undefined, checks))
     }
 
     if (zt instanceof z.ZodTuple) {
