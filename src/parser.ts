@@ -241,8 +241,13 @@ export function parseZodType<T = TZodParsed>(
 
     if (zt instanceof z.ZodArray) {
         const checks: TZodParsed['$checks'] = {}
-        checks.minLength = (zt._def as { minLength: { value: number } }).minLength.value
-        checks.maxLength = (zt._def as { maxLength: { value: number } }).maxLength.value
+        const d = (zt._def as { minLength?: { value: number }, maxLength?: { value: number } })
+        if (d.minLength) {
+            checks.minLength = d.minLength.value
+        }
+        if (d.maxLength) {
+            checks.maxLength = d.maxLength.value
+        }
         return callCb(mergeParsedData({ $inner: parseZodType<T>(zt.element as z.ZodType, cb) }, undefined, checks))
     }
 
